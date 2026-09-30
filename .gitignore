@@ -1,0 +1,27 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+venv/
+env/
+ENV/
+.venv/
+
+# Environment Variables
+.env
+
+# Generated Output Reports
+github-report.md
+reports/*.md
+*.log
+
+# IDE & Agent files
+.vscode/
+.idea/
+.agents/
+
+# System / OS temp files
+.DS_Store
+Thumbs.db
