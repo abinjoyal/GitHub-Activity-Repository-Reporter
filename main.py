@@ -15,7 +15,33 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from src.api.github_client import GitHubClient, GitHubAPIError
 from src.analytics.statistics import GitHubAnalytics
 from src.exporters.markdown_exporter import MarkdownExporter
-from src.utils.formatting import print_console_report
+from src.utils.formatting import print_console_report, print_console_comparison
+
+
+def fetch_user_dataset(client: GitHubClient, username: str) -> Dict[str, Any]:
+    """Helper to fetch profile, repos, languages, and events for a user."""
+    profile = client.get_user_profile(username)
+    repos = client.get_user_repos(username)
+    events = client.get_user_events(username)
+
+    repo_languages: List[Dict[str, int]] = []
+    for repo in repos[:30]:
+        langs_url = repo.get("languages_url")
+        if langs_url:
+            repo_langs = client.get_repo_languages(langs_url)
+            if repo_langs:
+                repo_languages.append(repo_langs)
+
+    repo_stats = GitHubAnalytics.process_repositories(repos)
+    language_stats = GitHubAnalytics.process_language_distribution(repo_languages)
+    activity_stats = GitHubAnalytics.process_events(events)
+
+    return {
+        "profile": profile,
+        "repo_stats": repo_stats,
+        "language_stats": language_stats,
+        "activity_stats": activity_stats
+    }
 
 
 def main() -> None:
@@ -31,6 +57,11 @@ def main() -> None:
         help="Target GitHub username (e.g., abinjoyal)"
     )
     parser.add_argument(
+        "-c", "--compare",
+        type=str,
+        help="Second GitHub username to compare in Side-by-Side VS Mode"
+    )
+    parser.add_argument(
         "-t", "--token",
         type=str,
         help="Optional GitHub Personal Access Token to avoid rate limiting"
@@ -39,12 +70,11 @@ def main() -> None:
         "-o", "--output",
         type=str,
         default=None,
-        help="Custom filepath for output Markdown report (default: reports/<username>-report.md)"
+        help="Custom filepath for output Markdown report"
     )
 
     args = parser.parse_args()
 
-    # Interactive prompt if username argument is missing
     username = args.username
     if not username:
         try:
@@ -57,41 +87,47 @@ def main() -> None:
         print("Error: GitHub username cannot be empty.", file=sys.stderr)
         sys.exit(1)
 
-    # Determine dynamic output report path if not explicitly provided
-    output_target = args.output if args.output else os.path.join("reports", f"{username}-report.md")
-
-    print(f"Fetching GitHub data for user: '{username}'...")
-
     try:
         client = GitHubClient(token=args.token)
-        profile = client.get_user_profile(username)
-        repos = client.get_user_repos(username)
-        events = client.get_user_events(username)
 
-        # Collect language byte counts for up to 30 most recently updated repos to preserve API quota
-        print(f"Analyzing repository language statistics ({len(repos)} total repos)...")
-        repo_languages: List[Dict[str, int]] = []
-        for repo in repos[:30]:
-            langs_url = repo.get("languages_url")
-            if langs_url:
-                repo_langs = client.get_repo_languages(langs_url)
-                if repo_langs:
-                    repo_languages.append(repo_langs)
+        # Developer VS Mode Branch
+        if args.compare:
+            user2_name = args.compare.strip()
+            print(f"Comparing User 1 ('{username}') vs User 2 ('{user2_name}')...")
 
-        # Process analytics
-        repo_stats = GitHubAnalytics.process_repositories(repos)
-        language_stats = GitHubAnalytics.process_language_distribution(repo_languages)
-        activity_stats = GitHubAnalytics.process_events(events)
+            u1_data = fetch_user_dataset(client, username)
+            u2_data = fetch_user_dataset(client, user2_name)
+
+            comp_res = GitHubAnalytics.compare_users(u1_data, u2_data)
+            print_console_comparison(comp_res)
+
+            output_target = args.output if args.output else os.path.join("reports", f"vs-{username}-vs-{user2_name}.md")
+            output_file = MarkdownExporter.generate_comparison_report(
+                user1_data=u1_data,
+                user2_data=u2_data,
+                comp_res=comp_res,
+                output_filepath=output_target
+            )
+            print(f"Successfully generated VS Mode report: {os.path.abspath(output_file)}")
+            return
+
+        # Single Profile Mode Branch
+        output_target = args.output if args.output else os.path.join("reports", f"{username}-report.md")
+        print(f"Fetching GitHub data for user: '{username}'...")
+
+        u1_data = fetch_user_dataset(client, username)
 
         # Console report display
-        print_console_report(profile, repo_stats, language_stats, activity_stats)
+        print_console_report(
+            u1_data["profile"], u1_data["repo_stats"], u1_data["language_stats"], u1_data["activity_stats"]
+        )
 
         # Markdown report generation
         output_file = MarkdownExporter.generate_report(
-            profile=profile,
-            repo_stats=repo_stats,
-            language_stats=language_stats,
-            activity_stats=activity_stats,
+            profile=u1_data["profile"],
+            repo_stats=u1_data["repo_stats"],
+            language_stats=u1_data["language_stats"],
+            activity_stats=u1_data["activity_stats"],
             output_filepath=output_target
         )
 
