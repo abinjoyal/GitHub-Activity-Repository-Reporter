@@ -61,3 +61,23 @@ def print_console_report(
     else:
         print(" No repositories found.")
     print("=" * 60 + "\n")
+
+
+def print_console_comparison(comp_res: Dict[str, Any]) -> None:
+    """Print side-by-side comparison table to stdout."""
+    u1 = comp_res["user1_name"]
+    u2 = comp_res["user2_name"]
+
+    print("\n" + "=" * 65)
+    print(f" DEVELOPER VS MODE: @{u1} vs @{u2}")
+    print("=" * 65)
+    print(f" {'METRIC':<25} | {u1:<12} | {u2:<12} | ADVANTAGE")
+    print("-" * 65)
+
+    for m in comp_res["metrics"]:
+        print(f" {m['metric']:<25} | {m['val1']:<12} | {m['val2']:<12} | {m['winner']}")
+
+    print("-" * 65)
+    print(f" MATCH WINNER: {comp_res['overall_winner']}")
+    print("=" * 65 + "\n")
+
