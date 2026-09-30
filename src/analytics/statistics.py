@@ -106,3 +106,63 @@ class GitHubAnalytics:
             "repositories_created": repo_created_count,
             "total_recent_events": len(events)
         }
+
+    @staticmethod
+    def compare_users(
+        user1_data: Dict[str, Any],
+        user2_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        Side-by-side comparison engine for two GitHub developer profiles.
+        """
+        u1_name = user1_data["profile"].get("login", "User 1")
+        u2_name = user2_data["profile"].get("login", "User 2")
+
+        metrics_list = [
+            ("Public Repositories", "total_repositories", "repo_stats"),
+            ("Total Stars Received", "total_stars", "repo_stats"),
+            ("Total Repository Forks", "total_forks", "repo_stats"),
+            ("Recent Commits Pushed", "commits", "activity_stats"),
+            ("Recent Pull Requests", "pull_requests", "activity_stats"),
+        ]
+
+        comparison_results = []
+        u1_score = 0
+        u2_score = 0
+
+        for label, key, group in metrics_list:
+            val1 = user1_data[group].get(key, 0)
+            val2 = user2_data[group].get(key, 0)
+
+            if val1 > val2:
+                winner = u1_name
+                u1_score += 1
+            elif val2 > val1:
+                winner = u2_name
+                u2_score += 1
+            else:
+                winner = "Tie 🤝"
+
+            comparison_results.append({
+                "metric": label,
+                "val1": val1,
+                "val2": val2,
+                "winner": winner
+            })
+
+        if u1_score > u2_score:
+            overall_winner = f"🏆 {u1_name}"
+        elif u2_score > u1_score:
+            overall_winner = f"🏆 {u2_name}"
+        else:
+            overall_winner = "🤝 Equal Match!"
+
+        return {
+            "user1_name": u1_name,
+            "user2_name": u2_name,
+            "user1_score": u1_score,
+            "user2_score": u2_score,
+            "overall_winner": overall_winner,
+            "metrics": comparison_results
+        }
+
