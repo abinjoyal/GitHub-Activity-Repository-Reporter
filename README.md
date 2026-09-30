@@ -90,6 +90,7 @@ Execute the following commands in your terminal:
 cd "d:/Python/Python Project/GitHub Activity & Repo Reporter"
 
 # 2. Activate Python virtual environment
+
 # Windows PowerShell:
 .\venv\Scripts\Activate.ps1
 # Windows CMD:
