@@ -129,3 +129,55 @@ class MarkdownExporter:
             f.write(content)
 
         return output_filepath
+
+    @staticmethod
+    def generate_comparison_report(
+        user1_data: Dict[str, Any],
+        user2_data: Dict[str, Any],
+        comp_res: Dict[str, Any],
+        output_filepath: str = "reports/vs-comparison.md"
+    ) -> str:
+        """
+        Generate and write a side-by-side comparison Markdown report.
+        """
+        if not os.path.dirname(output_filepath):
+            output_filepath = os.path.join("reports", output_filepath)
+
+        output_dir = os.path.dirname(output_filepath)
+        if output_dir:
+            os.makedirs(output_dir, exist_ok=True)
+
+        u1 = comp_res["user1_name"]
+        u2 = comp_res["user2_name"]
+        generated_at = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
+
+        lines = [
+            f"# Developer VS Report: @{u1} vs @{u2}",
+            "",
+            f"**Report Generated:** {generated_at}  ",
+            f"**Overall Match Winner:** {comp_res['overall_winner']}",
+            "",
+            "---",
+            "",
+            "## Side-by-Side Metric Breakdown",
+            "",
+            f"| Metric | @{u1} | @{u2} | Advantage |",
+            "| :--- | :---: | :---: | :---: |"
+        ]
+
+        for m in comp_res["metrics"]:
+            lines.append(f"| {m['metric']} | {m['val1']} | {m['val2']} | **{m['winner']}** |")
+
+        lines.extend([
+            "",
+            "---",
+            "",
+            "*Comparison report generated automatically by GitHub Activity & Repo Reporter.*"
+        ])
+
+        content = "\n".join(lines)
+        with open(output_filepath, "w", encoding="utf-8") as f:
+            f.write(content)
+
+        return output_filepath
+
