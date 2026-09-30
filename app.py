@@ -72,7 +72,7 @@ def fetch_user_data(username: str):
 # ==========================================
 if mode == "Single Profile Analytics 📊":
     st.sidebar.markdown("---")
-    username_input = st.sidebar.text_input("GitHub Username", value="abinjoyal")
+    username_input = st.sidebar.text_input("GitHub Username", value="", placeholder="e.g., Enter Your GitHub Username")
     generate_btn = st.sidebar.button("🔍 Generate Report", type="primary")
 
     st.title("📊 GitHub Activity & Repository Reporter")
@@ -80,11 +80,8 @@ if mode == "Single Profile Analytics 📊":
 
     username = username_input.strip()
 
-    if generate_btn or username:
-        if not username:
-            st.warning("Please enter a valid GitHub username.")
-        else:
-            with st.spinner(f"Fetching GitHub REST API data for **{username}**..."):
+    if generate_btn and username:
+        with st.spinner(f"Fetching GitHub REST API data for **{username}**..."):
                 try:
                     data = fetch_user_data(username)
                     profile = data["profile"]
@@ -197,6 +194,8 @@ if mode == "Single Profile Analytics 📊":
                     st.error(f"GitHub API Error: {err}")
                 except Exception as err:
                     st.error(f"Unexpected Error: {err}")
+    else:
+        st.info("👈 Enter a GitHub username in the sidebar and click **Generate Report**.")
 
 
 # ==========================================
@@ -204,8 +203,8 @@ if mode == "Single Profile Analytics 📊":
 # ==========================================
 elif mode == "Developer VS Mode ⚔️":
     st.sidebar.markdown("---")
-    u1_input = st.sidebar.text_input("User 1 Username", value="abinjoyal")
-    u2_input = st.sidebar.text_input("User 2 Username", value="joyaldev363")
+    u1_input = st.sidebar.text_input("User 1 Username", value="", placeholder="e.g., Enter Your GitHub Username")
+    u2_input = st.sidebar.text_input("User 2 Username", value="", placeholder="e.g., Enter Your GitHub Username")
     vs_btn = st.sidebar.button("⚔️ Start Developer Match", type="primary")
 
     st.title("⚔️ Developer VS Mode - Side-by-Side Match")
@@ -214,10 +213,7 @@ elif mode == "Developer VS Mode ⚔️":
     u1 = u1_input.strip()
     u2 = u2_input.strip()
 
-    if vs_btn or (u1 and u2):
-        if not u1 or not u2:
-            st.warning("Please enter two GitHub usernames to compare.")
-        else:
+    if vs_btn and u1 and u2:
             with st.spinner(f"Comparing **@{u1}** vs **@{u2}**..."):
                 try:
                     u1_data = fetch_user_data(u1)
@@ -303,3 +299,5 @@ elif mode == "Developer VS Mode ⚔️":
                     st.error(f"GitHub API Error: {err}")
                 except Exception as err:
                     st.error(f"Unexpected Error: {err}")
+    else:
+        st.info("👈 Enter two GitHub usernames in the sidebar and click **Start Developer Match**.")
