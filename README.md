@@ -32,7 +32,8 @@ Both interfaces automatically generate standardized Markdown reports (`github-re
 
 ## Key Features
 
-- **Interactive Web Dashboard**: Built with Streamlit and Plotly for real-time visualization.
+- **Developer VS Mode ⚔️**: Side-by-side match engine comparing two developers across stars, repos, commits, and PRs.
+- **Interactive Web Dashboard**: Built with Streamlit and Plotly for real-time visualization and mode switching.
 - **GitHub REST API v3 Integration**: Communicates with GitHub endpoints (`/users/{username}`, `/repos`, `/events`).
 - **Language Analytics**: Aggregates raw language byte weights to compute global percentage share with visual charts.
 - **Activity Log Parsing**: Tracks commits, pull requests, issue creations, and stars given.
@@ -48,7 +49,8 @@ GitHub Activity & Repo Reporter/
 ├── app.py                         # Web Dashboard (Streamlit & Plotly)
 ├── main.py                        # CLI Application Entry Point
 ├── reports/                       # Generated Markdown Reports directory
-│   └── GitHub-report.md
+│   ├── abinjoyal-report.md
+│   └── vs-abinjoyal-vs-joyaldev363.md
 ├── src/
 │   ├── __init__.py
 │   ├── api/
@@ -111,9 +113,9 @@ streamlit run app.py
 ```
 
 This will automatically open `http://localhost:8501` in your web browser, where you can:
-- Enter any GitHub username.
-- View interactive metric cards and language distribution pie charts.
-- Download the generated Markdown report directly.
+- Switch between **Single Profile Analytics** and **Developer VS Mode**.
+- Compare two developers side-by-side with Plotly comparative bar charts.
+- Download Markdown reports directly.
 
 ---
 
@@ -122,14 +124,11 @@ This will automatically open `http://localhost:8501` in your web browser, where 
 Run the command-line utility:
 
 ```bash
-# Interactive username entry
-python main.py
+# Single User Analytics Report
+python main.py -u abinjoyal
 
-# Specify username via CLI flag
-python main.py -u GitHub
-
-# Custom report output name
-python main.py -u GitHub -o reports/custom-report.md
+# Developer VS Mode (Side-by-Side Match)
+python main.py -u abinjoyal --compare joyaldev363
 ```
 
 ---
